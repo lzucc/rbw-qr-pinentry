@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""
+Development / source-tree launcher.
+
+Prefer installing the package so ``rbw-qr-pinentry`` lands on PATH:
+
+  pipx install /path/to/rbw-qr-pinentry
+  # or
+  pip install --user .
+
+Then:
+  rbw config set pinentry "$(command -v rbw-qr-pinentry)"
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+
+def _bootstrap() -> None:
+    here = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+    src = os.path.join(here, "src")
+    if os.path.isdir(src) and src not in sys.path:
+        sys.path.insert(0, src)
+
+    # Prefer a local .venv interpreter when running from a git checkout
+    # without an install (same idea as before packaging).
+    try:
+        import qrcode  # noqa: F401
+    except ImportError:
+        for candidate in (
+            os.path.join(here, ".venv", "bin", "python"),
+            os.path.join(here, ".venv", "bin", "python3"),
+            os.path.join(here, "venv", "bin", "python"),
+            os.path.join(here, "venv", "bin", "python3"),
+        ):
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                os.execv(
+                    candidate,
+                    [candidate, os.path.abspath(__file__), *sys.argv[1:]],
+                )
+
+
+_bootstrap()
+
+from rbw_qr_pinentry.pinentry import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

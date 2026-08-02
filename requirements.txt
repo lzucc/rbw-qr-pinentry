@@ -1,0 +1,6 @@
+# Runtime dependencies (also declared in pyproject.toml).
+# Prefer installing the package itself:
+#   pip install .
+#   pipx install .
+#   uv tool install .
+qrcode>=7.4
